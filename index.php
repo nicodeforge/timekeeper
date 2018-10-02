@@ -155,7 +155,8 @@ ini_set('display_startup_errors', TRUE);
         $(document).ready(function(){
           var feedback = getUrlParameter('q');
           if (feedback == "success") {
-            M.toast({html: '<span class="green-text text-lighten-2">Sauvegarde réussie !</span>'})
+            M.toast({html: '<span class="green-text text-lighten-2">Sauvegarde réussie !</span>'});
+            
           }
 
           $('#addForm').modal();
@@ -232,6 +233,7 @@ ini_set('display_startup_errors', TRUE);
         }
       
         function saveLog () {
+          
           timeMap = {
             '1' : $('#projet-1').attr('value'),
             '2' : $('#projet-2').attr('value'),

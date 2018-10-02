@@ -79,11 +79,10 @@ ini_set('display_startup_errors', TRUE);
         <div class="container">
           <div class="row">
             <div class="col s12 center-align">
-              <a class="col s12 center-align waves-effect btn btn-large green text-white project" value="0" onclick="saveLog()" id="save">Save</a><br>
+              <a class="col s12 center-align waves-effect btn btn-large green text-white" value="0" onclick="saveLog()" id="save">Save</a><br>
             </div>
           </div>  
         </div>
-
         <div class="container">
           <div class="row">
             <div class="col s12" id="log-recovery"></div>
@@ -111,7 +110,7 @@ ini_set('display_startup_errors', TRUE);
               <a href="#!" class="modal-close waves-effect waves-green btn-flat">Agree</a>
             </div>
           </div>
-
+          <!--
           <div class="fixed-action-btn">
           <a class="btn-floating btn-large red">
             <i class="large material-icons">pause</i>
@@ -122,7 +121,7 @@ ini_set('display_startup_errors', TRUE);
             <li><a class="btn-floating project grey darken-1" id="collegue" value="0"><i class="material-icons">child_care</i></a></li>
 
           </ul>
-        </div>
+        </div>-->
       <!-- End of content-->
       <!--Import jQuery before materialize.js-->
       <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -130,7 +129,8 @@ ini_set('display_startup_errors', TRUE);
       <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
 
       <script type="text/javascript">
-        var timeMap = new Object();
+        var timeMap = [],
+            active = 0;
 
         var getUrlParameter = function getUrlParameter(sParam) {
             var sPageURL = decodeURIComponent(window.location.search.substring(1)),
@@ -161,15 +161,16 @@ ini_set('display_startup_errors', TRUE);
         $(document).ready(function(){
           var feedback = getUrlParameter('q');
           if (feedback == "success") {
-            M.toast({html: '<span class="green-text text-lighten-2">Sauvegarde réussie !</span>'})
+            M.toast({html: '<span class="green-text text-lighten-2">Sauvegarde réussie !</span>'});
+           // reboot();
           }
 
           $('#addForm').modal();
           $('.sidenav').sidenav();
           $('.fixed-action-btn').floatingActionButton();
-          $('#projet-10').hide();
-          $('#projet-11').hide();
-          $('#projet-12').hide();
+          //$('#projet-10').hide();
+          //$('#projet-11').hide();
+          //$('#projet-12').hide();
           
           function checkTime(i) {
             if (i < 10) {
@@ -191,29 +192,147 @@ ini_set('display_startup_errors', TRUE);
               startTime()
             }, 500);
           }
+
+
           
           $('.project').click(function(e){
             e.preventDefault;
-            console.log($(this));
-            var clickedProject = this.attr('id'),
-                duration_active = new Date();
-            timeMap = {clickedProject:duration_active};
+            var clickedProject = $(this).attr('id');
+            clickedProject = $('#'+clickedProject);
+
+            if (clickedProject.hasClass("active green")) {
+              clickedProject.removeClass("active green");
+              clickedProject.addClass("grey");
+              console.log("Project "+clickedProject+" stopped.");
+            } else {
+              if (!clickedProject.hasClass("active")) {
+                
+                resetActiveProjects();
+
+                clickedProject.removeClass("grey");
+                clickedProject.addClass("active green");
+                console.log("Project "+clickedProject.attr('id')+" starts.");
+              }
+            }
+
+            //console.log(clickedProject);
+            //timeMap = {timer_name:clickedProject,timer_content:{duration:duration_active}};
+            //console.log(timeMap);
             //timeMap.push({duration_active:new Date()});
           });
 
-
-
           startTime();
+          //keepAlive();
         });
 
-
-        function copyText(){
-          var theLog = document.getElementById('log'),
-          returnMessage = document.getElementById('return-message');
-          theLog.select();
-          document.execCommand("copy");
-          $('#copier').removeClass('red').addClass('green');
+        function resetActiveProjects(){
+          $('.active').removeClass("green");
+          $('.active').addClass("grey");
+          $('.active').removeClass("active");
         }
+
+        function setTimeMap (){
+          $('.project').each(function(){
+              var proj = $(this).attr('id');
+              var duration = $(this).attr('value');
+              item = {};
+              item ["project"] = proj;
+              item ["duration"] = duration;
+              timeMap.push(item);
+                    
+          });
+        }
+        setTimeMap();
+
+        //Ok, c'est un peu bazooka, et utilise probablement trop de ressources, mais je calcule le temps passé en incrémentant 1, chaque seconde, à la valeur du projet actif.
+        setInterval(function() {
+                   // your code goes here...
+                   if($('.active').length > 0){
+                    //There is an active element on the page
+                    var duration_active_string = $('.active').attr('value'),
+                        duration_active = parseInt(duration_active_string);
+
+                    active = (duration_active + 1);
+                    $('.active').attr('value',active);// Sets the value of active project element in seconds. Refreshes every 1 second.
+                    //console.log(active);
+                   }
+               }, 1 * 1000);
+
+      //  keepAlive();
+        setInterval(function() {
+                   // Timemap construction needs huge improvements
+                //if (timeMap.length > 0) {
+                  //
+                    $('.project').each(function(index){
+                        var proj = $(this).attr('id');
+                        var duration = $(this).attr('value');
+                        for (var i = 0; i < timeMap.length; i++) {
+                          if (timeMap[index].project === proj) {
+                            timeMap[index].duration = duration;
+                          
+                        } break;
+                      }
+                    });
+                    //break;
+                  //}
+                  
+                //}
+                if (typeof(Storage) !== "undefined") {
+                              // Code for localStorage/sessionStorage.
+                                localStorage.setItem("time-map",JSON.stringify(timeMap));
+                                console.log("Inserted "+JSON.stringify(timeMap)+" in local storage");
+                              
+                          } else {
+                              console.log('Sorry! No Web Storage support..');
+                          }
+                  //updateTimeMap();
+                  console.log("timeMap vaut : \n"+JSON.stringify(timeMap));
+                  
+
+               }, 5 * 1000);
+
+        
+
+        function millisToMinutesAndSeconds(ms) {
+          var seconds = ms / 1000;
+              // 2- Extract hours:
+              var hours = parseInt( seconds / 3600 ); // 3,600 seconds in 1 hour
+              seconds = seconds % 3600; // seconds remaining after extracting hours
+              // 3- Extract minutes:
+              var minutes = parseInt( seconds / 60 ); // 60 seconds in 1 minute
+              // 4- Keep only seconds not extracted to minutes:
+              seconds = seconds % 60;
+              return hours+":"+minutes+":"+seconds;
+        }
+
+        function saveLog () {
+          resetActiveProjects();
+
+          //for (var i = 0; i < timeMap.length; i++) {
+            var theLog = "";
+            $('.project').each(function(index){
+                var proj = $(this).attr('id');
+                var duration = $(this).attr('value')*1000;
+                duration = millisToMinutesAndSeconds(duration);
+                var i = index+1;
+                theLog += i+"="+duration+"&";
+                //theLog.push(duration)   
+                // 1=0&n=x&16=4568
+            });
+            var query_length = theLog.length - 1,
+                query = "?"+theLog.slice(0,query_length);
+            //console.log(query);
+            window.open("./functions/logger.php"+query);
+          //}
+
+          
+        }
+
+       /* function reboot () {
+          $('.project').each(function(index){
+            $(this).attr('value') = 0;
+          });
+        }*/
         
       </script>
               

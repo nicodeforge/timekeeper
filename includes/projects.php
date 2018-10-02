@@ -1,5 +1,6 @@
 <?php 
 
+
 include '/var/www/html/timekeeper/functions/db.inc.php';
 
 $sql = "SELECT * FROM projects WHERE project_id";
@@ -19,11 +20,11 @@ if ($result = $mysqli->query($sql)) {
     if ($result -> num_rows > 0){
     	while ($row = mysqli_fetch_assoc($result)) {
    		
-   		echo "<div class=\"col s12 m4 center-align\"><a class=\"grey darken-1 waves-effect waves-light btn btn-large project\" value=\"0\" id=\"projet-".$row['project_id']."\">".$row['title']."</a></div>";
+   		echo "<div class=\"col s12 m4 center-align\">\n<a class=\"grey darken-1 waves-effect waves-light btn btn-large project\" value=\"0\" id=\"projet-".$row['project_id']."\">".$row['title']."</a>\n</div>\n";
     }
     }
     
-
+$_SESSION["num_projects"] = $result -> num_rows;
    
 
 		

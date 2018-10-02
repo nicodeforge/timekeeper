@@ -1,7 +1,9 @@
 <?php 
+session_start();
+$num_projects = $_SESSION["num_projects"];
 
 include '/var/www/html/timekeeper/functions/db.inc.php';
-
+$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_database);
 //$project = isset($_GET['project']) ? $_GET['project'] : "empty";
 //$endTime = isset($_GET['endTime']) ? $_GET['endTime'] : "empty";
 //$event = isset($_GET['event']) ? $_GET['event'] : "empty";
@@ -20,7 +22,7 @@ include '/var/www/html/timekeeper/functions/db.inc.php';
  $project12 = isset($_GET['12']) ? $_GET['12'] : '0';
 
 
-$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_database);
+
 
 // Check connection
 if($mysqli === false){
@@ -42,7 +44,7 @@ $sql = "INSERT INTO log (project_id, length,date_added) VALUES
             ('11', '".$project11."',NOW()),
             ('12', '".$project12."',NOW())";
 if($mysqli->query($sql) === true){
-	header('Location: http://localhost/timekeeper/?q=success');
+	header('Location: http://localhost/timekeeper/index2.php?q=success');
 	exit;
 } else{
     echo "ERROR: Could not able to execute $sql. " . $mysqli->error;
